@@ -1,0 +1,35 @@
+# Week 1 Journal
+
+##01_Introduction_24_25.Rmd
+  ### General tasks
+  - Updated R and R-Studio to the latests versions
+  - Cannot render the slides because there are some issues with some packages. 
+  - Investigated main libraries and packages in the Code
+  - Learned about `apply()` function.
+  - Installed required packages: `rmarkdown`, `htmltools`.
+
+  ### Code related with survey_responses.csv
+  - Investigated the dataset
+  - Main stats
+  - Types of variables (learnt the type of avriables from the apply() command. 
+  - Barplot to visualize some frequencies from the variables and their proportions.
+  - Run the regression proposed
+
+  ###New findings: 
+  - Experimented with data visualization using `ggplot2`.
+  - Discovered the difference between `sapply()` and `lapply()`.
+  
+  
+##02_Uncertaity.Rmd
+  ### General tasks
+    - Tried to visualize slides. 
+    - Investigated main libraries and packages in the code
+    
+  ### Code for survey_responses.csv
+    - 
+    
+    
+    
+    
+    
+    
