@@ -20,7 +20,7 @@
   - Discovered the difference between `sapply()` and `lapply()`.
   
   
-##02_Uncertaity-week1.Rmd
+##02_Uncertainty-week1.Rmd
 I created a new Rmd, different from the slides to customize my own chunks and implement my experiments.
 
   ### General tasks
@@ -31,7 +31,7 @@ I created a new Rmd, different from the slides to customize my own chunks and im
     - Open the dataset and investigate it: dimension, variables.
     - Performed bootstrap sample (line by line explaination)
     - Experimenting with bootstrap without regression
-    - Performed histogram
+    - Performed histogram (ChatGPT help!)
     - Performed bootstrap regression (line by line explaination)
     - Check covariances and SD. 
     
