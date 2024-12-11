@@ -1,4 +1,4 @@
-# Week 1 Journal
+# Week 1 Journal Carmen Coronas (721687)
 
 ##01_Introduction_24_25.Rmd
   ### General tasks
@@ -20,13 +20,24 @@
   - Discovered the difference between `sapply()` and `lapply()`.
   
   
-##02_Uncertaity.Rmd
+##02_Uncertaity-week1.Rmd
+I created a new Rmd, different from the slides to customize my own chunks and implement my experiments.
+
   ### General tasks
     - Tried to visualize slides. 
     - Investigated main libraries and packages in the code
     
-  ### Code for survey_responses.csv
-    - 
+  ### Code for browse.csv
+    - Open the dataset and investigate it: dimension, variables.
+    - Performed bootstrap sample (line by line explaination)
+    - Experimenting with bootstrap without regression
+    - Performed histogram
+    - Performed bootstrap regression (line by line explaination)
+    - Check covariances and SD. 
+    
+  ###New findings: bootstrap algorithm. When carried out without replacement, standard
+  deviation = 0!
+    - Bootstrap is useful in low dimensional data. Limitation: depends too much on the sample size and quality.
     
     
     
