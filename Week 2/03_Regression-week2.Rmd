@@ -1,0 +1,80 @@
+---
+title: "03_Regression: week 2"
+output: html_document
+date: "2024-12-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Regression: 
+
+```{r XXX}
+oj <- read.csv("../Data/oj.csv")
+head(oj, n=5)
+```
+
+```{r XXX}
+tail(oj, n=5)
+```
+
+```{r XXX}
+glm(log(sales) ~ brand + log(price), data=oj)
+```
+
+```{r XXX}
+x <- model.matrix(~ brand + log(price), data=oj); head(x); tail(x)
+```
+
+```{r XXX}
+oj$brand = as.factor(oj$brand)
+x <- model.matrix(~ brand + log(price), data=oj); head(x)
+```
+
+```{r XXX}
+oj$mybrand = relevel(oj$brand, "tropicana")
+x <- model.matrix(~ mybrand + log(price), data=oj); head(x)
+```
+
+```{r XXX}
+glm(log(sales) ~ log(price)*brand*feat, data=oj)
+```
+
+#Logistic regression
+
+Email Dataset
+```{r email example}
+email <- read.csv("../Data/spam.csv")
+dim(email)
+colnames(email)
+```
+
+```{r XXX}
+glm(spam ~ ., data=email, family='binomial')
+```
+
+```{r XXX}
+coef(spammy)["word_free"]; exp(coef(spammy)["word_free"])
+```
+
+```{r XXX}
+coef(spammy)["word_george"]; exp(coef(spammy)["word_george"]); 1/exp(coef(spammy)["word_george"])
+```
+
+```{r XXX}
+predict(spammy, newdata = email[c(1,4000),], type="response")
+```
+
+#Deviance and Likelihood
+```{r XXX}
+summary(spammy)$deviance
+summary(spammy)$null.deviance
+```
+
+Example: 
+```{r XXX}
+D <- summary(spammy)$deviance; D
+D0 <- summary(spammy)$null.deviance; D0
+R2 <- 1 - D/D0; R2
+```

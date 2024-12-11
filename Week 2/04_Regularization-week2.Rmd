@@ -1,0 +1,84 @@
+---
+title: "04_Regularization: week 2"
+output: html_document
+date: "2024-12-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#IS fit
+
+```{r IS fit}
+#Download png before!! From github
+knitr::include_graphics("figs/Overfit.png")
+```
+
+#Cross Validation Example: 
+```{r Cross Validation}
+SC <- read.csv("../Data/semiconductor.csv")
+full <- glm(FAIL ~ ., data=SC, family=binomial)
+1 - full$deviance/full$null.deviance
+````
+
+Step 1- K-fold functions
+```{r Step 1}
+## Out of sample prediction experiment
+## first, define the deviance and R2 functions
+## pred must be probabilities (0<pred<1) for binomial
+deviance <- function(y, pred, family=c("gaussian","binomial")){
+    family <- match.arg(family)
+    if(family=="gaussian"){
+        return( sum( (y-pred)^2 ) )
+    }else{
+        if(is.factor(y)) y <- as.numeric(y)>1
+        return( -2*sum( y*log(pred) + (1-y)*log(1-pred) ) )
+    }
+}
+## get null devaince too, and return R2
+R2 <- function(y, pred, family=c("gaussian","binomial")){
+    fam <- match.arg(family)
+    if(fam=="binomial"){
+        if(is.factor(y)){ y <- as.numeric(y)>1 }
+    }
+    dev <- deviance(y, pred, family=fam)
+    dev0 <- deviance(y, mean(y), family=fam)
+    return(1-dev/dev0)
+}
+````
+
+Step 2- K-Fold Partition/Experiment
+```{r XXX}
+# setup the experiment
+n <- nrow(SC) # the number of observations
+K <- 10 # the number of `folds'
+# create a vector of fold memberships (random order)
+foldid <- rep(1:K,each=ceiling(n/K))[sample(1:n)]
+# create an empty dataframe of results
+Out <- data.frame(full=rep(NA,K)) 
+# use a for loop to run the experiment
+for(k in 1:K){ 
+    train <- which(foldid!=k) # train on all but fold `k'
+    ## fit regression on full sample
+    rfull <- glm(FAIL~., data=SC, subset=train, family=binomial)
+    ## get prediction: type=response so we have probabilities
+    predfull <- predict(rfull, newdata=SC[-train,], type="response")
+    ## calculate and log R2
+    Out$full[k] <- R2(y=SC$FAIL[-train], pred=predfull, family="binomial")
+    ## print progress
+    cat(k, " ")
+}
+```
+
+Step 3- K-Fold Plots
+```{r XXX}
+boxplot(Out, col="plum", ylab="R2")
+```
+
+
+```{r XXX}
+## what are the average Out R2?
+colMeans(Out)
+```
+
