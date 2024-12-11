@@ -1,5 +1,5 @@
 ---
-title: "02_Uncertainty: week 45"
+title: "02_Uncertainty: week 2"
 output: html_document
 date: "2024-12-11"
 ---
@@ -16,92 +16,87 @@ dim(browser)
 head(browser)
 ```
 
-```{r stats browse}
- mean(browser$spend); var(browser$spend)/1e4; sqrt(var(browser$spend)/1e4)
+In this lecture, BH Algorithm.
+Multi-hypothesis testing. Pick a target value for q (0.1). Obtain p-values, re-order p and compute largest i such that: 
+(p(i) =< i/m * q) = k. Reject H(i) for all i up to k. 
+
+Note:this procedure substitutes signficance level!! So no need to check for significance. 
+
+#Example 1: browse dataset
+
+```{r BH Algorithm}
+spendy <- glm(log(spend) ~ . -id, data=browser)
+  round(summary(spendy)$coef,2)
 ```
-
-#Main idea about bootstrap: 
-Treat your sample as a population with size 
-```{r original bootstrap}
- B <- 1000  #Number of iterations for bootstrap resampling
-  mub <- c()  # New vector: Will hold the mean values for each bootstrap sample
-  for (b in 1:1000){ ## Loop through 1000 bootstrap iterations
-    samp_b <- sample.int(nrow(browser), replace=TRUE) #Sets a bootstrap sample by randomly sampling row indices (with replacement)
-    mub <- c(mub, mean(browser$spend[samp_b])) #Compute the mean of the 'spend' column for the current bootstrap sample and the mean to the vect (mub)
-  }
-  sd(mub) #SD: provides variability of the mean estimate. SD = 81
-```
-```{r experiment bootstrap: without replacement}
- B <- 1000  #Number of iterations for bootstrap resampling
-  mub <- c()  # New vector: Will hold the mean values for each bootstrap sample
-  for (b in 1:1000){ ## Loop through 1000 bootstrap iterations
-    samp_b <- sample.int(nrow(browser), replace=FALSE) #WITHOUT REPLACEMENT
-    mub <- c(mub, mean(browser$spend[samp_b])) #Compute the mean of the 'spend' column for the current bootstrap sample and the mean to the vect (mub)
-  }
-  sd(mub) #SD: provides variability of the mean estimate. SD now 0. 
-```
-#Results from bootstrap without replacement
-  In line with lecture: uncertainty and variance in bootstrap comes bc of the replacement. 
-  "Sampling without replacement would generate no variability across samples." Indeed, SD = 0. 
-```{r frenquentist distribution}
-
-h <- hist(mub) # Create a histogram of the bootstrap sample means 'mub'
-
-# Generate a sequence of x-values spanning the range of 'mub'
-  xfit <- seq(min(mub), max(mub), length = 40)  
-# 'xfit' is a sequence of 40 equally spaced values between the minimum and maximum of 'mub'.
-# It will be used for plotting the fitted normal distribution curve.
-
-# Compute the y-values for a normal distribution (probability density function)
-  yfit <- dnorm(xfit, mean = mean(browser$spend), sd = sqrt(var(browser$spend)/1e4))  
-# 'dnorm' calculates the normal density at each value of 'xfit'.
-# Parameters:
-# - mean = mean(browser$spend): The mean of the original data.
-# - sd = sqrt(var(browser$spend)/1e4): Standard deviation of the normal distribution,
-#   scaled down by 1e4 for visualization (to match the histogram scale).
-
-# Scale the y-values to match the histogram
-yfit <- yfit * diff(h$mids[1:2]) * length(mub)  
-# Explanation of each term:
-# - 'diff(h$mids[1:2])': The bin width of the histogram.
-#   - This ensures the area under the fitted curve aligns with the histogram's bin sizes.
-# - 'length(mub)': The total number of observations in 'mub' (i.e., the histogram's total count).
-#   - This ensures the total area of the curve matches the histogram's total area.
-# Together, these adjustments align the normal curve with the scale and range of the histogram.
-
-# Add the fitted normal curve to the histogram
-lines(xfit, yfit, col = "black", lwd = 2)  
-# 'lines' overlays the fitted normal curve on the histogram.
-# Parameters:
-# - 'col = "black"': Sets the color of the line to black.
-# - 'lwd = 2': Sets the line width to make it thicker for better visibility.
-```
-##Note. all mub are the same value. This gives a sqaure as the distribution... With the second command associated to yfit we are re-scaling!! 
+#Comments: 
+All variables significant except controls for race. 
+Issue with this method: sometimes slope too close to zero: therefore, sometimes useless procedure... 
 
 
-```{r bootstrapping regressions}
-
-##Note for me: it takes a little time to process!! These are not inmediate processes!!!!
-
-B <- 1000 # Number of bootstrap iterations
-  betas <- c()  # Currently initialized as a vector
-  for (b in 1:1000){ # Loop through 1000 bootstrap iterations
-    samp_b <- sample.int(nrow(browser), replace=TRUE) # Create a bootstrap sample by sampling row indices with replacement 
-    reg_b <- glm(log(spend) ~ broadband + anychildren, data=browser[samp_b,]) # Fit a regression model using the bootstrap sample (uses variables in the dataset!)
-    betas <- rbind(betas, coef(reg_b)) # Resulting coefficients stored in the empty vector. 
-  }; head(betas, n=3)
+```{r XXX}
+pval <- summary(spendy)$coef[-1, "Pr(>|t|)"]
+  pvalrank <- rank(pval)
+  reject <- ifelse(pval< (0.1/9)*pvalrank, 2, 1) 
   
-#We are creating a 
+  #png(file="figs/BHAlgoExample.png",
+  width=600, height=350)
+  plot(pvalrank, pval, ylab="p-value", xlab="p-value rank", pch=16, col=reject)
+  lines(pvalrank, (0.1/9)*pvalrank)
+  #dev.off()
+  
+  print(pval)
+  print(reject)
 ```
 
-##Notes from the lecture: 
-JOINT sampling distribution! Useful to estimate covariances. 
-```{r covariances from bootstrap}
-cov(betas[,"broadband"], betas[,"anychildren"])
-##Small covariance in this case. 
+
+#Example 2: semiconductor dataset
+Context of the example: we wanna look if the chip fails. 
+
+```{r data for example 2}
+SC <- read.csv("../Data/semiconductor.csv")
+dim(SC)
+head(SC)
+```
+
+SC: More columns (201)
+
+```{r regression}
+full_sc <- glm(FAIL ~ ., data=SC, family=binomial)
+pvals_sc <- summary(full)$coef[-1,4] #-1 to drop the intercept
+print(pvals_sc)
+```
+
+```{r histogram for pvalues}
+hist(pvals_sc, xlab="p-value", main="", col="lightblue")
+```
+
+Pvalues ranged between 0-1. 
+
+```{r setting the cut}
+fdr_cut <- function(pvals_sc, q=0.1){ ## The FDR threshold (e.g., 0.1 means a 10% FDR is allowed).
+  pvals_sc <- sort(pvals_sc[!is.na(pvals_sc)]) #Sort and Filter P-Values: essential for the BH algorithm!!
+  N <- length(pvals_sc) #Total number of p-values after removing NA.
+  k <- rank(pvals_sc, ties.method="min") #Ranks of the p-values (from smallest to largest). Assigns the smallest rank to tied values.
+  alpha_sc <- max(pvals_sc[ pvals_sc<= (q*k/(N+1)) ]) #alpha_sc = the largest p-value below the BH-adjusted threshold. BH condition!! 
+  
+  plot(pvals_sc, log="xy", xlab="order", main=sprintf("FDR of %g",q),  ## log-log plot to visualize results!!
+   ylab="p-value", bty="n", col=c(8,2)[(pvals_sc<=alpha_sc) + 1], pch=20)
+  lines(1:N, q*(1:N)/(N+1)) ## Line representing the BH threshold
+
+  return(alpha_sc)
+}
+
+fdr_cut(pvals_sc)
 ````
+##Interpreting the graph: 
+  Red dots interpretation: we aim to have a simpler model (regularization). We use this regression to remove coefficients. Simple way of selection. 
+  In the histogram, we saw many coefficients with pvalues being 0!! This means many significant coefficients!!
+  Binomial model. 
 
-
-##End of bootstrap: 
-Important: Bootstrap performs poorly if sample is a poor approximation of the population.
-Useful in low dimensional data! (7 variables in browse dataset)
+##Understanding the difference between pvalue and FDR:
+  - PValue: we aree sure that every individual observations has a 5% chance of being false positive. This is, 5% limit
+  to reject H0. 5% chance of have Type I Error. More trials, significant increase in FP. 
+  - FDR: controls for the FP among the significant results. We allow for a 10% of results on average neing false
+  positive. FDR does not account for individual chances of FP. 
+  
+  This means that, if we have 100 and 20 of them are significant, 10% of them are potential FP (2 out of 20). 
